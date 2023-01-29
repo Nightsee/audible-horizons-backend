@@ -2,7 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const router = express.Router()
 const bodyParser = require('body-parser')
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 
@@ -30,17 +30,28 @@ router.post('/login', (req,res)=>{
     }
     User.findOne({email: userAuth.email}, (err, foundUser)=>{
         if(foundUser !== null){
-            bcrypt.compare(userAuth.password, foundUser.password).then(Valid => {
+            bcrypt.compare(userAuth.password, foundUser.password).then((Valid) => {
                 if(!Valid){
-                   return res.json({loginOk: false, prob: "INCORRECT_PASSWORD"})
-                }
-                const user = {foundUser}
-                const token =  jwt.sign(user, 'RANDOM_TOKEN_SECRET' )  
-                res.cookie("token", token, {
-                         httpOnly: true
-                    })      
-                return res.json({loginOk: true, userid: foundUser._id, token: token})
+                    return res.json({loginOk: false, prob: "INCORRECT_PASSWORD"})
+                 }
+                 const user = {foundUser}
+                 const token =  jwt.sign(user, 'RANDOM_TOKEN_SECRET' )  
+                 res.cookie("token", token, {
+                          httpOnly: true
+                     })      
+                 return res.json({loginOk: true, userid: foundUser._id, token: token})
             }).catch(err =>{console.log(err)})
+            // bcrypt.compare(userAuth.password, foundUser.password).then(Valid => {
+            //     if(!Valid){
+            //        return res.json({loginOk: false, prob: "INCORRECT_PASSWORD"})
+            //     }
+            //     const user = {foundUser}
+            //     const token =  jwt.sign(user, 'RANDOM_TOKEN_SECRET' )  
+            //     res.cookie("token", token, {
+            //              httpOnly: true
+            //         })      
+            //     return res.json({loginOk: true, userid: foundUser._id, token: token})
+            // }).catch(err =>{console.log(err)})
         }else if(foundUser === null){
             res.json({loginOk: false,prob: "USER_NOT_FOUND"})
         }
@@ -53,17 +64,30 @@ router.post('/register', verifyunique,(req, res)=>{
         email: req.body.email,
         password: req.body.password
     }
-    bcrypt.hash(reqdata.password, 10).then(hash =>{
-                const user = new User({
-                        fname: reqdata.fname,
-                        lname: reqdata.lname,
-                        email: reqdata.email,
-                        password: hash,
-                        favorites: []
-                    })
-                 user.save()
-                 res.json({registerOk: true, alertMessage: "account created"})  
-    }) 
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash(reqdata.password, salt, function(err, hash) {
+            const user = new User({
+                fname: reqdata.fname,
+                lname: reqdata.lname,
+                email: reqdata.email,
+                password: hash,
+                favorites: []
+            })
+         user.save()
+         res.json({registerOk: true, alertMessage: "account created"})  
+        });
+    });
+    // bcrypt.hash(reqdata.password, 10).then(hash =>{
+    //             const user = new User({
+    //                     fname: reqdata.fname,
+    //                     lname: reqdata.lname,
+    //                     email: reqdata.email,
+    //                     password: hash,
+    //                     favorites: []
+    //                 })
+    //              user.save()
+    //              res.json({registerOk: true, alertMessage: "account created"})  
+    // }) 
 })
 
 //API routes------------------------
