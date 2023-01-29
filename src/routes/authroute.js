@@ -20,7 +20,7 @@ router.use(cookieParser())
 
 //normal users routes----------------
 router.get('/', (req,res)=>{
-    res.send('ok')
+    res.json({message: "this is server"})
 })
 router.get('/verifybeforelogin', verifybeforeloginpage)
 router.post('/login', (req,res)=>{
