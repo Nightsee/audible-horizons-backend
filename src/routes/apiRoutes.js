@@ -29,9 +29,7 @@ const storage = multer.diskStorage({
         cb(null, req.params.id + '.' + fileName[1])
     }
 });
-var upload = multer({
-    storage: storage,  
-})
+var upload = multer({storage: storage})
 
 // routes :
 router.get('/logout', verifytoken, (req, res)=>{
